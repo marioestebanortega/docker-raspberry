@@ -11,6 +11,7 @@ services:
     ports:
       - 139:130
       - 445:445
+    read_only: false  
     volumes:
       - /usr/share/zoneinfo/America/Bogota:/etc/localtime
       - /home/pi/media:/media
