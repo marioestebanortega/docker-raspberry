@@ -5,7 +5,7 @@ services:
   samba:
     image: dperson/samba:rpi
     restart: always
-    command: '-u "pi;America86" -s "media;/media;yes;no"'
+    command: '-u "pi;password" -s "media;/media;yes;no"'
     stdin_open: true
     tty: true
     ports:
