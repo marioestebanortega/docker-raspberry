@@ -12,5 +12,5 @@ services:
       - 139:130
       - 445:445
     volumes:
-      - /usr/share/zoneinfo/America/Argentina/Mendoza:/etc/localtime
+      - /usr/share/zoneinfo/America/Bogota:/etc/localtime
       - /home/pi/media:/media
