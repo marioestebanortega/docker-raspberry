@@ -6,8 +6,6 @@ También agregué un pequeño server samba por si querés compartir los archivos
 
 Todo esto es parte de unos tutoriales que estoy subiendo a [Youtube](https://www.youtube.com/playlist?list=PLqRCtm0kbeHCEoCM8TR3VLQdoyR2W1_wv)
 
-NOTA: Esta repo fue actualizada para correr usando flexget y transmission [en este video](https://youtu.be/TqVoHWjz_tI), podés todavia acceder a la versión vieja (con rtorrent) en la branch [rtorrent](https://github.com/pablokbs/plex-rpi/tree/rtorrent)
-
 ## Requerimientos iniciales
 
 Agregar tu usuario (cambiar `kbs` con tu nombre de usuario)
@@ -51,7 +49,7 @@ sudo apt-key fingerprint 0EBFCD88
 echo "deb [arch=armhf] https://download.docker.com/linux/debian \
      $(lsb_release -cs) stable" | \
     sudo tee /etc/apt/sources.list.d/docker.list
-sudo apt-get update && sudo apt-get install -y --no-install-recommends docker-ce docker-compose
+sudo apt-get update && sudo apt-get install -y docker-ce docker-compose
 ```
 
 Modificá tu docker config para que guarde los temps en el disco:
@@ -71,28 +69,58 @@ sudo usermod -a -G docker kbs
 docker-compose up -d
 ```
 
-Montar el disco (es necesario ntfs-3g si es que tenes tu disco en NTFS)
-NOTA: en este [link](https://youtu.be/OYAnrmbpHeQ?t=5543) pueden ver la explicación en vivo
-
-```
-# usamos la terminal como root porque vamos a ejecutar algunos comandos que necesitan ese modo de ejecución
-sudo su
-# buscamos el disco que querramos montar (por ejemplo la partición sdb1 del disco sdb)
-fdisk -l
-# pueden usar el siguiente comando para obtener el UUID
-ls -l /dev/disk/by-uuid/
-# y simplemente montamos el disco en el archivo /etc/fstab (pueden hacerlo por el editor que les guste o por consola)
-echo UUID="{nombre del disco o UUID que es único por cada disco}" {directorio donde queremos montarlo} (por ejemplo /mnt/storage) ntfs-3g defaults,auto 0 0 | \
-     sudo tee /etc/fstab
-# por último para que lea el archivo fstab
-mount -a (o reiniciar)
-```
-
 ## Cómo correrlo
 
-Simplemente bajate este repo y modificá las rutas de tus archivos en el archivo (oculto) .env, y después corré:
+Simplemente bajate este repo y modificá las rutas de tus archivos en el archivo (oculto) .env:
 
-`docker-compose up -d`
+
+```
+version: "2"
+
+services:
+
+  samba:
+    image: dperson/samba:rpi
+    restart: always
+    command: '-u "pi;password" -s "media;/media;yes;no" -s "downloads;/downloads;yes;no"'  <--- estos son los directorios que vamos a compartir con samba y sus credenciales
+    stdin_open: true
+    tty: true
+    ports:
+      - 139:130
+      - 445:445
+    volumes:
+      - /usr/share/zoneinfo/America/Argentina/Mendoza:/etc/localtime   <--- modifica esto con tu zona horaria si queres
+      - ${MEDIA}:/media
+      - ${DOWNLOADS}:/downloads
+
+  rtorrent:
+    image: linuxserver/rutorrent:arm32v7-v3.9-ls47
+    environment:
+      - PUID=1000
+      - PGID=1000
+    ports:
+      - 80:80
+      - 51413:51413
+      - 6881:6881/udp
+    volumes:
+      - ${TORRENTS_CONFIG}:/config
+      - ${MEDIA}:${MEDIA}
+      - ${DOWNLOADS}:/downloads
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+
+  plex:
+    image: jaymoulin/plex:1.16.3-armhf
+    ports:
+      - 32400:32400
+      - 33400:33400
+    volumes:
+      - ${PLEX_CONFIG}:/root/Library/Application Support/Plex Media Server
+      - ${MEDIA}:/media
+    restart: always
+    network_mode: "host"
+
+```
 
 ## IMPORTANTE
 
