@@ -17,7 +17,7 @@ services:
       - ${DOWNLOADS}:/downloads
 
   rtorrent:
-    image: linuxserver/rutorrent:arm32v7-v3.9-ls47
+    image: pablokbs/rutorrent-armhf
     environment:
       - PUID=1000
       - PGID=1000
