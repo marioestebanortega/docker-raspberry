@@ -39,7 +39,6 @@ services:
     ports:
       - 32400:32400
       - 33400:33400
-    hostname: raspberrypi
     volumes:
       - /home/pi/plex:/root/Library/Application Support/Plex Media Server
     restart: always
