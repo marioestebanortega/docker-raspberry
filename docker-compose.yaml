@@ -36,7 +36,7 @@ services:
     
   plex:
     image: jaymoulin/plex:1.14.1
-    expose:
+    ports:
       - 32400:32400
       - 33400:33400
     hostname: raspberrypi
